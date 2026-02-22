@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta charset="utf-8" />
+    <title>19 Mayıs AR Projesi</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      #startButton, #unmuteButton {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 15px 30px;
+        font-size: 20px;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        z-index: 9999;
+        cursor: pointer;
+        font-family: sans-serif;
+      }
+      #startButton {
+        background-color: #e74c3c; /* Kırmızı başlama butonu */
+      }
+      #unmuteButton {
+        display: none; /* Başlangıçta gizli */
+        background-color: #27ae60; /* Yeşil sesi aç butonu */
+        bottom: 50px; /* Ekranda biraz daha yukarıda dursun */
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="startButton">Kamerayı Aç</button>
+    
+    <button id="unmuteButton">Sesi Aç 🔊</button>
+
+    <a-scene mindar-image="imageTargetSrc: ./resim_video/targets.mind; autoStart: false;" 
+             color-space="sRGB" 
+             renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="video-19mayis" src="./resim_video/19mayis.mp4" preload="auto" loop crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video src="#video-19mayis" position="0 0 0" height="1.2" width="1"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      const sceneEl = document.querySelector('a-scene');
+      const startButton = document.querySelector('#startButton');
+      const unmuteButton = document.querySelector('#unmuteButton');
+      const target = document.querySelector('[mindar-image-target]');
+      const video = document.querySelector('#video-19mayis');
+
+      // 1. Kamerayı Başlat Butonu
+      startButton.addEventListener('click', () => {
+        sceneEl.setAttribute('mindar-image', 'imageTargetSrc: ./resim_video/targets.mind; autoStart: true;');
+        sceneEl.systems["mindar-image-system"].start();
+        startButton.style.display = 'none'; // Kamerayı açtıktan sonra butonu gizle
+      });
+
+      // 2. Kamera Resmi Gördüğünde
+      target.addEventListener("targetFound", event => {
+        video.play(); // Video mecburen sessiz başlar
+        
+        // Eğer video sessizse "Sesi Aç" butonunu göster (Apple cihazlar için)
+        if(video.muted) {
+            unmuteButton.style.display = 'block'; 
+        }
+      });
+
+      // 3. Kamera Resmi Kaybettiğinde
+      target.addEventListener("targetLost", event => {
+        video.pause();
+        unmuteButton.style.display = 'none'; // Sesi aç butonunu sakla
+      });
+
+      // 4. Kullanıcı "Sesi Aç" butonuna bastığında
+      unmuteButton.addEventListener('click', () => {
+        video.muted = false; // Ses kilidini aç
+        unmuteButton.style.display = 'none'; // Butonu gizle
+      });
+    </script>
+  </body>
+</html>
